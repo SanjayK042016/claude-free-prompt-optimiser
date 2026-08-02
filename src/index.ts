@@ -26,6 +26,12 @@ server.registerTool(
         .optional()
         .describe("Force-include (or exclude) a step-by-step reasoning section. If omitted, it's auto-detected from task complexity."),
     },
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
   },
   async ({ prompt, style, addThinkingStep }) => {
     const result = optimizePrompt(prompt, { style, addThinkingStep });
@@ -58,6 +64,12 @@ server.registerTool(
       "Diagnoses weaknesses in a prompt (missing role, context, output format, examples, success criteria, bundled instructions, vague language) without rewriting it. Runs entirely locally, no API calls.",
     inputSchema: {
       prompt: z.string().min(1).describe("The prompt to diagnose."),
+    },
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
     },
   },
   async ({ prompt }) => {

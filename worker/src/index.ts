@@ -26,6 +26,12 @@ function createServer() {
 					.optional()
 					.describe("Force-include (or exclude) a step-by-step reasoning section. If omitted, it's auto-detected from task complexity."),
 			}),
+			annotations: {
+				readOnlyHint: true,
+				destructiveHint: false,
+				idempotentHint: true,
+				openWorldHint: false,
+			},
 		},
 		async ({ prompt, style, addThinkingStep }) => {
 			const result = optimizePrompt(prompt, { style, addThinkingStep });
@@ -59,6 +65,12 @@ function createServer() {
 			inputSchema: z.object({
 				prompt: z.string().min(1).describe("The prompt to diagnose."),
 			}),
+			annotations: {
+				readOnlyHint: true,
+				destructiveHint: false,
+				idempotentHint: true,
+				openWorldHint: false,
+			},
 		},
 		async ({ prompt }) => {
 			const issues = analyzePrompt(prompt);

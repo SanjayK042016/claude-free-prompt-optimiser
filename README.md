@@ -68,6 +68,20 @@ prompting guide recommends. Anything it can't infer — like your actual
 audience or desired format — is left as an explicit `[SPECIFY: ...]`
 placeholder so you fill in the real answer instead of getting a guess.
 
+## Privacy Policy
+
+This connector collects no data of any kind.
+
+- **Data collection**: None. The server does not log, store, or transmit prompt
+  content anywhere. Each request is processed in memory and discarded.
+- **Usage and storage**: No database, no analytics, no third-party services.
+  The Cloudflare Workers instance is stateless — nothing persists between requests.
+- **Third-party sharing**: None. There are no outbound network calls in this
+  server's code, so your prompts never leave the request/response cycle.
+- **Data retention**: N/A — nothing is retained.
+- **Contact**: open an issue at
+  [github.com/SanjayK042016/claude-free-prompt-optimiser/issues](https://github.com/SanjayK042016/claude-free-prompt-optimiser/issues).
+
 ## Development
 
 ```bash
