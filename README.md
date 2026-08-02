@@ -18,10 +18,15 @@ it once and use it as much as you want with zero extra API credits.
 
 ## Option A: connect the public remote server (easiest, anyone can use it)
 
-A hosted copy runs on Cloudflare Workers with no login required. In Claude
-(claude.ai or Desktop): **Settings → Connectors → Add custom connector**, and
-paste the deployed `/mcp` URL (see [worker/README.md](worker/README.md) for
-how to deploy your own copy — it's free).
+A hosted copy runs on Cloudflare Workers with no login required:
+
+```
+https://claude-free-prompt-optimiser.claude-free-prompt-optimiser-worker.workers.dev/mcp
+```
+
+In Claude (claude.ai or Desktop): **Settings → Connectors → Add custom
+connector**, paste that URL, and save. See [worker/README.md](worker/README.md)
+if you'd rather deploy your own copy (also free).
 
 ## Option B: run it locally (stdio)
 

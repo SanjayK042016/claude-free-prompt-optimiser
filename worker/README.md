@@ -8,6 +8,17 @@ Streamable HTTP from Cloudflare's free edge network so anyone can add it as a
 
 No auth, no user data, no LLM calls — just deterministic prompt rewriting.
 
+## Live instance
+
+```
+https://claude-free-prompt-optimiser.claude-free-prompt-optimiser-worker.workers.dev/mcp
+```
+
+## Connect it in Claude
+
+In Claude (claude.ai or Desktop): **Settings → Connectors → Add custom
+connector**, paste the URL above, and save. No authentication step needed.
+
 ## Deploy your own copy
 
 ```bash
@@ -24,11 +35,6 @@ https://claude-free-prompt-optimiser.<your-subdomain>.workers.dev
 ```
 
 The MCP endpoint is that URL + `/mcp`.
-
-## Connect it in Claude
-
-In Claude (claude.ai or Desktop): **Settings → Connectors → Add custom
-connector**, paste the `/mcp` URL, and save. No authentication step needed.
 
 ## Local development
 
