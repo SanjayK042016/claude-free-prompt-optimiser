@@ -82,6 +82,45 @@ This connector collects no data of any kind.
 - **Contact**: open an issue at
   [github.com/SanjayK042016/claude-free-prompt-optimiser/issues](https://github.com/SanjayK042016/claude-free-prompt-optimiser/issues).
 
+## How this was built
+
+```mermaid
+flowchart TD
+    A["Idea: MCP tool that optimizes prompts<br/>for free, no extra credits"] --> B{"Optimization method?"}
+    B -->|chosen: rule-based heuristics| C["Zero LLM calls · zero API keys<br/>pure regex/string logic"]
+    C --> D{"Language / runtime?"}
+    D -->|chosen: TypeScript + Node| E["npm init + @modelcontextprotocol/sdk"]
+
+    subgraph P1["Local stdio MCP server"]
+        E --> F["heuristics.ts<br/>analyzePrompt + optimizePrompt"]
+        F --> G["index.ts<br/>registerTool: optimize_prompt, analyze_prompt"]
+        G --> H["Smoke-tested over real stdio<br/>MCP protocol with a live client"]
+        H --> I["Pushed to GitHub<br/>claude-free-prompt-optimiser"]
+        I --> J["claude mcp add --scope user<br/>works in every local Claude Code session"]
+    end
+
+    J --> K{"Goal: anyone connects<br/>via URL, no install"}
+    K -->|stdio only runs locally| L["Need a remote HTTP server instead"]
+
+    subgraph P2["Public remote connector"]
+        L --> M["Scaffolded Cloudflare's official<br/>remote-mcp-authless template"]
+        M --> N["Ported heuristics into worker<br/>createMcpHandler + McpServer v2"]
+        N --> O["Verified locally: wrangler dev<br/>+ a real Streamable HTTP client"]
+        O --> P["wrangler login &rarr; wrangler deploy"]
+        P --> Q["Live public URL on *.workers.dev/mcp"]
+        Q --> R["Re-verified end-to-end<br/>over the public internet"]
+    end
+
+    subgraph P3["Polish for discoverability"]
+        R --> S["Added tool annotations<br/>readOnlyHint / destructiveHint"]
+        S --> T["Added Privacy Policy section<br/>— zero data collected"]
+        T --> U["Directory-submission ready,<br/>blocked on Team/Enterprise org"]
+    end
+
+    classDef decision fill:#fff3cd,stroke:#856404,color:#665200;
+    class B,D,K decision;
+```
+
 ## Development
 
 ```bash
