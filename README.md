@@ -16,16 +16,23 @@ it once and use it as much as you want with zero extra API credits.
 - **`analyze_prompt`** — diagnostics only, no rewrite. Useful if you just want
   a checklist of what's missing.
 
-## Install
+## Option A: connect the public remote server (easiest, anyone can use it)
+
+A hosted copy runs on Cloudflare Workers with no login required. In Claude
+(claude.ai or Desktop): **Settings → Connectors → Add custom connector**, and
+paste the deployed `/mcp` URL (see [worker/README.md](worker/README.md) for
+how to deploy your own copy — it's free).
+
+## Option B: run it locally (stdio)
 
 ```bash
-git clone https://github.com/<your-username>/free-prompt-optimizer-mcp.git
-cd free-prompt-optimizer-mcp
+git clone https://github.com/SanjayK042016/claude-free-prompt-optimiser.git
+cd claude-free-prompt-optimiser
 npm install
 npm run build
 ```
 
-## Connect to Claude Code
+### Connect to Claude Code
 
 Add to your MCP config (e.g. via `claude mcp add`, or directly in your
 `.claude.json` / `mcp_servers` config):
@@ -35,26 +42,13 @@ Add to your MCP config (e.g. via `claude mcp add`, or directly in your
   "mcpServers": {
     "free-prompt-optimizer": {
       "command": "node",
-      "args": ["/absolute/path/to/free-prompt-optimizer-mcp/dist/index.js"]
+      "args": ["/absolute/path/to/claude-free-prompt-optimiser/dist/index.js"]
     }
   }
 }
 ```
 
-Or, once published to npm, run it without cloning:
-
-```json
-{
-  "mcpServers": {
-    "free-prompt-optimizer": {
-      "command": "npx",
-      "args": ["-y", "free-prompt-optimizer-mcp"]
-    }
-  }
-}
-```
-
-## Connect to Claude Desktop
+### Connect to Claude Desktop
 
 Add the same block to your `claude_desktop_config.json` under `mcpServers`,
 then restart Claude Desktop.
