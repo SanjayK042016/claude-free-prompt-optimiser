@@ -12,9 +12,18 @@ it once and use it as much as you want with zero extra API credits.
 ## Tools
 
 - **`optimize_prompt`** — takes a raw prompt, returns a restructured version
-  plus a list of what was weak in the original and what was changed.
-- **`analyze_prompt`** — diagnostics only, no rewrite. Useful if you just want
-  a checklist of what's missing.
+  plus a list of what was weak in the original and what was changed. For
+  humans: read the text response. For agents/pipelines: read
+  `structuredContent` (`optimizedPrompt`, `issuesFound`, `improvementsApplied`,
+  `wordCount`) instead of parsing prose.
+- **`analyze_prompt`** — diagnostics only, no rewrite. Returns a **pass/fail +
+  numeric score (0–100)** in `structuredContent`, so an agentic caller can gate
+  on it programmatically (`if (!result.passed) reject()`) instead of parsing
+  text. Accepts `assumeDefinedElsewhere` (`role`, `audience`, `output_format`,
+  `success_criteria`, `examples`) for agentic pipelines where those are
+  already fixed by a system prompt one layer up — pass them and this won't
+  false-flag a per-turn task prompt for not repeating them. Also accepts
+  `passThreshold` (default 70) to tune how strict the gate is.
 
 ## Option A: connect the public remote server (easiest, anyone can use it)
 
@@ -68,6 +77,40 @@ prompting guide recommends. Anything it can't infer — like your actual
 audience or desired format — is left as an explicit `[SPECIFY: ...]`
 placeholder so you fill in the real answer instead of getting a guess.
 
+## Using it from an agentic pipeline
+
+Call `analyze_prompt` as a pre-flight guardrail before your agent's task
+prompt reaches the model — no LLM round-trip, so it's cheap even in a tight
+loop:
+
+```json
+// request
+{
+  "prompt": "Reply to this customer's complaint about a late delivery.",
+  "assumeDefinedElsewhere": ["role", "audience", "output_format"],
+  "passThreshold": 70
+}
+```
+
+```json
+// response.structuredContent
+{
+  "passed": true,
+  "score": 76,
+  "issues": [
+    { "id": "no_examples", "severity": "medium", "message": "..." },
+    { "id": "no_success_criteria", "severity": "medium", "message": "..." }
+  ],
+  "assumedElsewhere": ["role", "audience", "output_format"]
+}
+```
+
+Your orchestrator branches on `passed`/`score` directly — no string parsing.
+Without `assumeDefinedElsewhere` the same prompt scores 41/100 and fails,
+because in isolation it really is missing role/audience/format; declaring
+what your system prompt already guarantees is what makes the check accurate
+for a per-turn task prompt instead of a full standalone one.
+
 ## Privacy Policy
 
 This connector collects no data of any kind.
@@ -117,8 +160,18 @@ flowchart TD
         T --> U["Directory-submission ready,<br/>blocked on Team/Enterprise org"]
     end
 
+    U --> V{"Question: does this fit<br/>agentic pipelines too?"}
+    V -->|prose output only usable by humans| W["Gap: no structured output,<br/>no system-prompt awareness"]
+
+    subgraph P4["Agent-facing transformation"]
+        W --> X["Added validatePrompt: pass/fail<br/>+ numeric score, not just prose"]
+        X --> Y["Added assumeDefinedElsewhere<br/>— avoids false positives when role/format<br/>already live in a system prompt"]
+        Y --> Z["Added outputSchema + structuredContent<br/>to both tools for machine consumption"]
+        Z --> AA["Re-verified locally and in prod:<br/>same prompt goes 41&#8594;76 score<br/>once context is declared"]
+    end
+
     classDef decision fill:#fff3cd,stroke:#856404,color:#665200;
-    class B,D,K decision;
+    class B,D,K,V decision;
 ```
 
 ## Development

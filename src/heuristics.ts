@@ -164,6 +164,61 @@ export function analyzePrompt(prompt: string): Issue[] {
   return issues;
 }
 
+/**
+ * Which structural gaps can legitimately live "elsewhere" in an agentic
+ * system — e.g. role/format/audience defined once in a system prompt, not
+ * repeated in every per-turn task prompt. Letting a caller declare these
+ * avoids false positives when analyzing a task prompt in isolation.
+ */
+export const ELSEWHERE_CONCERNS = ["role", "audience", "output_format", "success_criteria", "examples"] as const;
+export type ElsewhereConcern = (typeof ELSEWHERE_CONCERNS)[number];
+
+const ELSEWHERE_TO_ISSUE_ID: Record<ElsewhereConcern, string> = {
+  role: "no_role",
+  audience: "no_audience",
+  output_format: "no_output_format",
+  success_criteria: "no_success_criteria",
+  examples: "no_examples",
+};
+
+const SEVERITY_PENALTY: Record<Issue["severity"], number> = { high: 25, medium: 12, low: 5 };
+
+export interface ValidateOptions {
+  /** Concerns already guaranteed by a system prompt or other layer — suppressed instead of flagged. */
+  assumeDefinedElsewhere?: ElsewhereConcern[];
+  /** Minimum score (0-100) to count as `passed`. Defaults to 70. */
+  passThreshold?: number;
+}
+
+export interface ValidateResult {
+  passed: boolean;
+  score: number;
+  issues: Issue[];
+  /** The assumeDefinedElsewhere entries that actually suppressed a would-be issue. */
+  assumedElsewhere: ElsewhereConcern[];
+}
+
+/**
+ * Machine-facing variant of analyzePrompt for agentic pipelines: returns a
+ * structured pass/fail + numeric score instead of prose, and accepts
+ * `assumeDefinedElsewhere` so a caller can say "role/format are already
+ * fixed by my system prompt, don't flag them for this per-turn prompt."
+ */
+export function validatePrompt(rawPrompt: string, options: ValidateOptions = {}): ValidateResult {
+  const threshold = options.passThreshold ?? 70;
+  const assumed = options.assumeDefinedElsewhere ?? [];
+  const suppressedIds = new Set(assumed.map((c) => ELSEWHERE_TO_ISSUE_ID[c]));
+
+  const allIssues = analyzePrompt(rawPrompt);
+  const issues = allIssues.filter((i) => !suppressedIds.has(i.id));
+  const assumedElsewhere = assumed.filter((c) => allIssues.some((i) => i.id === ELSEWHERE_TO_ISSUE_ID[c]));
+
+  const penalty = issues.reduce((sum, i) => sum + SEVERITY_PENALTY[i.severity], 0);
+  const score = Math.max(0, 100 - penalty);
+
+  return { passed: score >= threshold, score, issues, assumedElsewhere };
+}
+
 function stripFluff(text: string): string {
   return text
     .trim()
